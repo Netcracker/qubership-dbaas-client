@@ -5,8 +5,16 @@
 
     <groupId>org.qubership.cloud</groupId>
     <artifactId>dbaas-client-root</artifactId>
-    <version>8.0.0-SNAPSHOT</version>
+    <version>8.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <modules>
         <module>dbaas-client-parent</module>
@@ -15,6 +23,13 @@
         <module>dbaas-client-report-aggregate</module>
     </modules>
 
+    <scm>
+        <connection>scm:git:https://github.com/Netcracker/qubership-dbaas-client.git</connection>
+        <developerConnection>scm:git:https://github.com/Netcracker/qubership-dbaas-client.git
+        </developerConnection>
+        <url>https://github.com/Netcracker/qubership-dbaas-client</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <reporting>
         <plugins>
@@ -30,7 +45,7 @@
         <repository>
             <id>github</id>
             <url>https://maven.pkg.github.com/netcracker/*</url>
-            <snapshots/>
+            <snapshots />
         </repository>
     </repositories>
 
