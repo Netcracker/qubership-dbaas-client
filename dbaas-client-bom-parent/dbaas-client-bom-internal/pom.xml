@@ -28,7 +28,7 @@
         <jackson-bom.version>2.18.4.1</jackson-bom.version>
         <jakarta-annotation.version>3.0.0</jakarta-annotation.version>
         <flyway.version>10.20.1</flyway.version>
-        <shedlock.version>5.16.0</shedlock.version>
+        <shedlock.version>6.9.2</shedlock.version>
         <testcontainers.version>1.20.6</testcontainers.version>
 
         <!--Qubership's libs-->
