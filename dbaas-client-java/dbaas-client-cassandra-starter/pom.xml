@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-cassandra</artifactId>
-            <version>4.5.6</version>
+            <version>4.5.7</version>
         </dependency>
         <dependency>
             <groupId>com.netcracker.cloud</groupId>
