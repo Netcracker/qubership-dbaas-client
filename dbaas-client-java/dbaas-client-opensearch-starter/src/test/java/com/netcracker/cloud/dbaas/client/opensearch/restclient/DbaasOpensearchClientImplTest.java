@@ -11,6 +11,7 @@ import com.netcracker.cloud.framework.contexts.tenant.TenantContextObject;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
@@ -662,6 +663,7 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
+    @Disabled("https://github.com/opensearch-project/opensearch-java/issues/1792")
     void fieldCaps() throws IOException, InterruptedException {
         upsertDocument("1", "Key", "Val");
         upsertDocument("1", "Key", "Val", secondIndexName);
