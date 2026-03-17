@@ -40,7 +40,8 @@ public class OpensearchTestContainer extends GenericContainer<OpensearchTestCont
                     .withEnv("DISABLE_SECURITY_PLUGIN", "true")
                     .withEnv("DISABLE_INSTALL_DEMO_CONFIG", "true")
                     .withEnv("discovery.type", "single-node")
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120))
+                    .withReuse(true);
         }
         return opensearchContainer;
     }

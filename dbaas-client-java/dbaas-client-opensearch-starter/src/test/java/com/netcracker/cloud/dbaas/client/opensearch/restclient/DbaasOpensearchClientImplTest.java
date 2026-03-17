@@ -47,10 +47,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.awaitility.Awaitility.await;
 
 import static com.netcracker.cloud.dbaas.client.opensearch.restclient.configuration.OpensearchTestConfiguration.TEST_INDEX;
 import static com.netcracker.cloud.dbaas.client.opensearch.restclient.configuration.OpensearchTestConfiguration.TEST_PREFIX;
@@ -68,8 +72,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @WebAppConfiguration
 @Slf4j
 class DbaasOpensearchClientImplTest {
-
-    private static int SECOND = 1000;
 
     @Autowired
     private OpensearchProperties opensearchProperties;
@@ -206,31 +208,36 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void reindex() throws IOException, InterruptedException {
+    void reindex() throws IOException {
         String destinationIndex = "dest_reindex";
         upsertDocument("1", "get", "get value");
-        Thread.sleep(SECOND);
         ReindexRequest reindexRequest = new ReindexRequest.Builder()
                 .source(new Source.Builder().index(serviceClient.normalize(TEST_INDEX)).build())
                 .dest(new Destination.Builder().index(serviceClient.normalize(destinationIndex)).build())
+                .refresh(Refresh.True)
                 .build();
         ReindexResponse reindexResponse = serviceClient.getClient().reindex(reindexRequest);
         assertNotNull(reindexResponse);
-        Thread.sleep(5L * SECOND);
+        assertEquals(Long.valueOf(1L), reindexResponse.created());
+
         GetRequest getRequest = new GetRequest.Builder().index(serviceClient.normalize(destinationIndex)).id("1").build();
-        GetResponse getResponse = serviceClient.getClient().get(getRequest, Map.class);
-        assertTrue(getResponse.found());
+        await().atMost(Duration.ofSeconds(5))
+                .pollInterval(Duration.ofMillis(200))
+                .untilAsserted(() -> {
+                    GetResponse response = serviceClient.getClient().get(getRequest, Map.class);
+                    assertTrue(response.found());
+                });
 
         deleteIndex(destinationIndex);
     }
 
     @Test
-    void updateByQueryOneIndex() throws IOException, InterruptedException {
+    void updateByQueryOneIndex() throws IOException {
         upsertDocument("1", "User", "Kimchy");
-        Thread.sleep(SECOND);
         UpdateByQueryRequest request = new UpdateByQueryRequest.Builder().index(serviceClient.normalize(TEST_INDEX))
                 .query(new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build())
                 .script(new Script.Builder().inline(new InlineScript.Builder().source("ctx._source.Field=3;").build()).build())
+                .refresh(Refresh.True)
                 .build();
         UpdateByQueryResponse bulkResponse = serviceClient.getClient().updateByQuery(request);
         assertNotNull(bulkResponse);
@@ -243,14 +250,14 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void updateByQueryManyIndex() throws IOException, InterruptedException {
+    void updateByQueryManyIndex() throws IOException {
         upsertDocument("1", "one", "first doc");
         upsertDocument("1", "one", "another docs", secondIndexName);
-        Thread.sleep(SECOND);
         UpdateByQueryRequest request = new UpdateByQueryRequest.Builder()
                 .index(serviceClient.normalize(TEST_INDEX), serviceClient.normalize(secondIndexName))
                 .query(new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build())
                 .script(new Script.Builder().inline(new InlineScript.Builder().source("ctx._source.Field=3;").build()).build())
+                .refresh(Refresh.True)
                 .build();
         UpdateByQueryResponse bulkResponse = serviceClient.getClient().updateByQuery(request);
         assertNotNull(bulkResponse);
@@ -268,14 +275,14 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void deleteByQueryFromManyIndex() throws IOException, InterruptedException {
+    void deleteByQueryFromManyIndex() throws IOException {
         upsertDocument("1", "User", "Kimchy");
         upsertDocument("1", "User", "Twitter", secondIndexName);
-        Thread.sleep(SECOND);
 
         DeleteByQueryRequest request = new DeleteByQueryRequest.Builder()
                 .index(serviceClient.normalize(TEST_INDEX), serviceClient.normalize(secondIndexName))
                 .query(new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build())
+                .refresh(Refresh.True)
                 .build();
         DeleteByQueryResponse bulkResponse = serviceClient.getClient().deleteByQuery(request);
         assertNotNull(bulkResponse);
@@ -395,19 +402,17 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void count() throws IOException, InterruptedException {
+    void count() throws IOException {
         upsertDocument("1", "count", "count value");
         upsertDocument("2", "count", "another count value", secondIndexName);
-        Thread.sleep(SECOND);
         CountRequest countRequest = new CountRequest.Builder().index(serviceClient.normalize(TEST_INDEX), serviceClient.normalize(secondIndexName)).build();
         CountResponse countResponse = serviceClient.getClient().count(countRequest);
         assertEquals(2, countResponse.count());
     }
 
     @Test
-    void update() throws IOException, InterruptedException {
+    void update() throws IOException {
         upsertDocument("1", "update", "update value");
-        Thread.sleep(SECOND);
         GetRequest getRequestBeforeUpdate = new GetRequest.Builder().index(serviceClient.normalize(TEST_INDEX)).id("1").build();
         GetResponse<Map> firstGetResponse = serviceClient.getClient().get(getRequestBeforeUpdate, Map.class);
         assertEquals(1, firstGetResponse.version());
@@ -444,9 +449,8 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void search() throws IOException, InterruptedException {
+    void search() throws IOException {
         upsertDocument("1", "search", "value-search");
-        Thread.sleep(SECOND);
         SearchRequest searchRequest = new SearchRequest.Builder()
                 .index(serviceClient.normalize(TEST_INDEX))
                 .query(new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build())
@@ -462,10 +466,9 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void msearch() throws IOException, InterruptedException {
+    void msearch() throws IOException {
         upsertDocument("1", "FirstKey", "FirstValue");
         upsertDocument("1", "SecondKey", "SecondValue", secondIndexName);
-        Thread.sleep(SECOND);
 
         MsearchRequest request = new MsearchRequest.Builder()
                 .searches(
@@ -540,10 +543,9 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void searchTemplate() throws IOException, InterruptedException {
+    void searchTemplate() throws IOException {
         upsertDocument("1", "Key", "Value");
         upsertDocument("2", "Key", "Value", secondIndexName);
-        Thread.sleep(SECOND);
 
         Map<String, JsonData> scriptParams = new HashMap<>();
         scriptParams.put("field", JsonData.of("Key"));
@@ -566,9 +568,8 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void explain() throws IOException, InterruptedException {
+    void explain() throws IOException {
         upsertDocument("1", "Key", "Value");
-        Thread.sleep(SECOND);
         ExplainRequest request = new ExplainRequest.Builder()
                 .index(serviceClient.normalize(TEST_INDEX))
                 .id("1")
@@ -581,9 +582,8 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void termvectors() throws IOException, InterruptedException {
+    void termvectors() throws IOException {
         upsertDocument("1", "Key", "Value");
-        Thread.sleep(SECOND);
         TermvectorsRequest<Map> request = new TermvectorsRequest.Builder<Map>()
                 .index(serviceClient.normalize(TEST_INDEX))
                 .id("1")
@@ -594,9 +594,8 @@ class DbaasOpensearchClientImplTest {
     }
 
     @Test
-    void rankEval() throws IOException, InterruptedException {
+    void rankEval() throws IOException {
         upsertDocument("1", "user", "kimchy");
-        Thread.sleep(SECOND);
         RankEvalRequest request = new RankEvalRequest.Builder()
                 .index(serviceClient.normalize(TEST_INDEX))
                 .metric(new RankEvalMetric.Builder()
@@ -664,10 +663,9 @@ class DbaasOpensearchClientImplTest {
 
     @Test
     @Disabled("https://github.com/opensearch-project/opensearch-java/issues/1792")
-    void fieldCaps() throws IOException, InterruptedException {
+    void fieldCaps() throws IOException {
         upsertDocument("1", "Key", "Val");
         upsertDocument("1", "Key", "Val", secondIndexName);
-        Thread.sleep(SECOND);
         FieldCapsRequest request = new FieldCapsRequest.Builder()
                 .index(serviceClient.normalize(TEST_INDEX), serviceClient.normalize(secondIndexName))
                 .fields("Key")
@@ -690,6 +688,7 @@ class DbaasOpensearchClientImplTest {
                 .index(serviceClient.normalize(indexName))
                 .id(id)
                 .document(Map.of(key, value))
+                .refresh(Refresh.True)
                 .build();
         serviceClient.getClient().index(updateIndexRequest);
     }

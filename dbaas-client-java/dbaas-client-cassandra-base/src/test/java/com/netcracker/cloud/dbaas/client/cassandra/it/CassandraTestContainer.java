@@ -8,7 +8,7 @@ import java.time.Duration;
 
 @Slf4j
 public class CassandraTestContainer extends CassandraContainer<CassandraTestContainer> {
-    private static final String IMAGE_VERSION = "cassandra:latest";
+    private static final String IMAGE_VERSION = "cassandra:4.1";
     private static CassandraTestContainer container;
 
     private CassandraTestContainer() {
