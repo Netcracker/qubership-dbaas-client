@@ -33,7 +33,8 @@ public class MongoWithTransactionsTestContainer extends MongoDBContainer {
             container = (MongoWithTransactionsTestContainer) new MongoWithTransactionsTestContainer()
                 .withEnv("MONGO_INITDB_DATABASE", MONGO_ADMIN_DB)
                 .withExposedPorts(MONGO_PORT)
-                .withStartupTimeout(Duration.ofSeconds(120));
+                .withStartupTimeout(Duration.ofSeconds(120))
+                .withReuse(true);
         }
         return container;
     }

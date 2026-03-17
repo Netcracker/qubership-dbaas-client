@@ -35,7 +35,8 @@ public class MongoTestContainer extends GenericContainer<MongoTestContainer> {
                     .withEnv("MONGO_INITDB_ROOT_PASSWORD", MONGO_ADMIN_PWD)
                     .withEnv("MONGO_INITDB_DATABASE", MONGO_ADMIN_DB)
                     .withExposedPorts(MONGO_PORT)
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120))
+                    .withReuse(true);
         }
         return container;
     }
