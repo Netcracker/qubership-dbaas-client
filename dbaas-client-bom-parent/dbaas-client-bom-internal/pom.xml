@@ -27,7 +27,7 @@
         <spring.data.redis.version>4.0.3</spring.data.redis.version>
         <jackson-bom.version>2.20.2</jackson-bom.version>
         <jakarta-annotation.version>3.0.0</jakarta-annotation.version>
-        <flyway.version>11.14.1</flyway.version>
+        <flyway.version>12.5.0</flyway.version>
         <shedlock.version>7.6.0</shedlock.version>
         <testcontainers.version>1.21.4</testcontainers.version>
 
@@ -35,7 +35,7 @@
         <rest-libraries.version>7.0.0</rest-libraries.version>
         <microservice-restclient.version>7.0.0</microservice-restclient.version>
         <framework-contexts.version>8.0.0</framework-contexts.version>
-        <core-utils.version>2.4.1</core-utils.version>
+        <core-utils.version>3.0.5</core-utils.version>
     </properties>
 
     <dependencyManagement>
