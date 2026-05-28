@@ -27,7 +27,7 @@
         <spring.data.redis.version>4.0.3</spring.data.redis.version>
         <jackson-bom.version>2.20.2</jackson-bom.version>
         <jakarta-annotation.version>3.0.0</jakarta-annotation.version>
-        <flyway.version>11.14.1</flyway.version>
+        <flyway.version>12.6.2</flyway.version>
         <shedlock.version>7.6.0</shedlock.version>
         <testcontainers.version>1.21.4</testcontainers.version>
 
